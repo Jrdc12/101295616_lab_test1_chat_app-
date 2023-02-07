@@ -75,6 +75,8 @@
             } else {
               // Store the session token in local storage
               localStorage.setItem("sessionToken", data.token)
+              // store username in local storage
+              localStorage.setItem("username", username)
               // Redirect to index.html
               window.location.href = "/chat.html"
             }

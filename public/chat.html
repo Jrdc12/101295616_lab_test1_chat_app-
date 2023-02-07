@@ -12,6 +12,12 @@
   <body class="bg-gray-100 h-screen">
     <header class="bg-white p-6">
       <h1 class="text-2xl font-bold">Chat App</h1>
+      <button
+        class="float-right bg-blue-500 hover:bg-blue-700 text-white p-2 rounded-lg"
+        id="logout-button"
+      >
+        Logout
+      </button>
     </header>
 
     <main class="p-6">
@@ -31,32 +37,62 @@
             </button>
           </div>
         </div>
-        <div class="p-4 overflow-y-scroll h-32" id="message-container"></div>
+        <div class="p-4 overflow-y-scroll h-100" id="message-container"></div>
       </div>
     </main>
 
     <!-- Socket.io client-side script -->
     <script src="/socket.io/socket.io.js"></script>
     <script>
+      const sessionToken = localStorage.getItem("sessionToken")
+
+      if (!sessionToken) {
+        window.location.href = "/"
+      }
+
+      const headers = new Headers({
+        Authorization: `Bearer ${sessionToken}`,
+      })
+
+      const username = localStorage.getItem("username")
+
+      if (!username) {
+        window.location.href = "/"
+      }
+
       const socket = io()
       const messageInput = document.getElementById("message")
       const sendMessageButton = document.getElementById("send-message")
       const messageContainer = document.getElementById("message-container")
+      const logoutButton = document.getElementById("logout-button")
 
       // Join Room
       socket.emit("join-room", "default")
 
       // Handle Chat Message
       sendMessageButton.addEventListener("click", () => {
-        const message = messageInput.value
+        const message = {
+          // get username from session token
+          username: username,
+          text: messageInput.value,
+        }
         socket.emit("chat-message", message)
         messageInput.value = ""
+      })
+
+      logoutButton.addEventListener("click", () => {
+        localStorage.removeItem("sessionToken")
+        localStorage.removeItem("username")
+
+        socket.emit("leave-room", "default")
+
+        window.location.href = "/"
       })
 
       // Display Chat Message
       socket.on("chat-message", (message) => {
         const messageElement = document.createElement("div")
-        messageElement.innerHTML = message
+        messageElement.innerHTML = `<strong>${message.username}:</strong> ${message.text}`
         messageContainer.appendChild(messageElement)
       })
 
@@ -68,9 +104,17 @@
       // Display User is Typing
       socket.on("typing", (userId) => {
         const typingElement = document.createElement("div")
-        typingElement.innerHTML = `User ${userId} is typing...`
+        typingElement.innerHTML = `User ${username} is typing...`
         messageContainer.appendChild(typingElement)
       })
+
+      socket.on("user-joined", () => {
+        const joinElement = document.createElement("div")
+        joinElement.innerHTML = `User ${username} joined the chat.`
+        messageContainer.appendChild(joinElement)
+      })
+
+      socket.emit("user-joined", username)
     </script>
   </body>
 </html>

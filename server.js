@@ -73,23 +73,29 @@ io.on("connection", (socket) => {
   let currentRoom
 
   // Handle Join Room
-  socket.on("join-room", (room) => {
+  socket.on("join-room", (room, username) => {
     if (currentRoom) {
       socket.leave(currentRoom)
     }
     socket.join(room)
     currentRoom = room
+    io.in(currentRoom).emit("user-joined", username)
   })
 
   // Handle Leave Room
-  socket.on("leave-room", (room) => {
+  socket.on("leave-room", (room, username) => {
     socket.leave(room)
+    const leaveMessage = {
+      username: username,
+      text: `${username} has left this chat.`,
+    }
+    io.in(room).emit("chat-message", leaveMessage)
   })
 
   // Handle Chat Message
   socket.on("chat-message", (message) => {
     const ChatMessage = new ChatMessagee({
-      username: socket.id,
+      username: User,
       room: currentRoom,
       message: message,
     })
@@ -100,7 +106,7 @@ io.on("connection", (socket) => {
 
   // Handle User is Typing
   socket.on("typing", () => {
-    socket.to(currentRoom).emit("typing", socket.id)
+    socket.to(currentRoom).emit("typing", User)
   })
 
   // Handle Logout

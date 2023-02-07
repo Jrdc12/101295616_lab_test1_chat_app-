@@ -71,7 +71,8 @@
               alert(data.error)
             } else {
               localStorage.setItem("sessionToken", data.token)
-
+              // store username in local storage
+              localStorage.setItem("username", username)
               window.location.href = "/chat.html"
             }
           })
