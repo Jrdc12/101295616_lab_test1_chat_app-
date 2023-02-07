@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat App</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-100 h-screen">
+    <header class="bg-white p-6">
+      <h1 class="text-2xl font-bold">Chat App</h1>
+    </header>
+
+    <main class="p-6">
+      <div class="bg-white rounded-lg shadow-lg">
+        <div class="p-4">
+          <div class="flex">
+            <input
+              type="text"
+              class="w-full border border-gray-400 rounded-lg p-2"
+              id="message"
+            />
+            <button
+              class="bg-blue-500 hover:bg-blue-700 text-white p-2 rounded-lg"
+              id="send-message"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+        <div class="p-4 overflow-y-scroll h-32" id="message-container"></div>
+      </div>
+    </main>
+
+    <!-- Socket.io client-side script -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io()
+      const messageInput = document.getElementById("message")
+      const sendMessageButton = document.getElementById("send-message")
+      const messageContainer = document.getElementById("message-container")
+
+      // Join Room
+      socket.emit("join-room", "default")
+
+      // Handle Chat Message
+      sendMessageButton.addEventListener("click", () => {
+        const message = messageInput.value
+        socket.emit("chat-message", message)
+        messageInput.value = ""
+      })
+
+      // Display Chat Message
+      socket.on("chat-message", (message) => {
+        const messageElement = document.createElement("div")
+        messageElement.innerHTML = message
+        messageContainer.appendChild(messageElement)
+      })
+
+      // Handle User is Typing
+      messageInput.addEventListener("input", () => {
+        socket.emit("typing")
+      })
+
+      // Display User is Typing
+      socket.on("typing", (userId) => {
+        const typingElement = document.createElement("div")
+        typingElement.innerHTML = `User ${userId} is typing...`
+        messageContainer.appendChild(typingElement)
+      })
+    </script>
+  </body>
+</html>

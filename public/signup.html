@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up</title>
+    <link
+      href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-200">
+    <nav class="bg-white p-6 flex items-center justify-between">
+      <a href="#">Chat Application</a>
+      <a href="/login" class="text-blue-500">Log In</a>
+    </nav>
+    <div class="container mx-auto mt-16">
+      <div class="bg-white p-10 rounded-lg shadow-md">
+        <h2 class="text-lg mb-6">Sign Up</h2>
+        <form id="signup-form">
+          <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2" for="username">
+              Username
+            </label>
+            <input
+              class="w-full border border-gray-400 p-2 rounded-lg"
+              type="text"
+              id="username"
+              name="username"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2" for="password">
+              Password
+            </label>
+            <input
+              class="w-full border border-gray-400 p-2 rounded-lg"
+              type="password"
+              id="password"
+              name="password"
+              required
+            />
+          </div>
+          <button
+            class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+            type="submit"
+          >
+            Sign Up
+          </button>
+        </form>
+      </div>
+    </div>
+    <script>
+      const signupForm = document.getElementById("signup-form")
+      signupForm.addEventListener("submit", (event) => {
+        event.preventDefault()
+        const username = signupForm.elements["username"].value
+        const password = signupForm.elements["password"].value
+        const data = { username, password }
+
+        fetch("/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        })
+          .then((response) => {
+            return response.json()
+          })
+          .then((data) => {
+            if (!data.success) {
+              alert(data.error)
+            } else {
+              // Store the session token in local storage
+              localStorage.setItem("sessionToken", data.token)
+              // Redirect to index.html
+              window.location.href = "/chat.html"
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error)
+          })
+      })
+    </script>
+  </body>
+</html>
